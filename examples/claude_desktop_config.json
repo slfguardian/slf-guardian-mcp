@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "slf-guardian": {
+      "command": "slf-guardian-mcp",
+      "env": {
+        "SLF_API_KEY": "slf_live_your_key_here"
+      }
+    }
+  }
+}
