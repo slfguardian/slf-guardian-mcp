@@ -1,5 +1,7 @@
 # SLF Guardian MCP
 
+<!-- mcp-name: io.github.slfguardian/slf-guardian-mcp -->
+
 Six security checks an AI agent can call **before** it acts — before it delivers
 code, installs a dependency, runs a shell or SQL command, opens a link or reads
 an untrusted page.
