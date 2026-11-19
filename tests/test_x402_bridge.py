@@ -43,6 +43,12 @@ def test_auto_pay_is_disabled_unless_literal_true(monkeypatch):
     assert not bridge.auto_pay_enabled()
 
 
+def test_windows_runtime_is_rejected_before_wallet_initialization(monkeypatch):
+    monkeypatch.setattr(bridge.os, "name", "nt")
+    with pytest.raises(bridge.PaymentBridgeError, match="disabled on Windows"):
+        bridge._get_payment_runtime("https://slfguardian.com", "/v1/audit")
+
+
 def test_valid_quote_requires_canonical_resource_and_fixed_terms(monkeypatch):
     enable_auto_pay(monkeypatch)
     bridge.validate_payment_context(
@@ -250,6 +256,51 @@ def test_real_sdk_policy_abort_happens_before_fake_signer(monkeypatch, tmp_path)
     )
     client = x402.x402ClientSync()
     client.register(bridge.BASE_NETWORK, ExactEvmScheme(FakeScheme()))
+    client.on_before_payment_creation(
+        bridge.payment_policy_hook(
+            "https://slfguardian.com", "/v1/audit", tmp_path / "spend.json"
+        )
+    )
+    with pytest.raises(PaymentAbortedError):
+        client.create_payment_payload(required)
+    assert calls == []
+    assert not (tmp_path / "spend.json").exists()
+
+
+def test_legacy_v1_offer_aborts_before_fake_signer(monkeypatch, tmp_path):
+    x402 = pytest.importorskip("x402")
+    from x402.schemas import (
+        PaymentAbortedError,
+        PaymentRequiredV1,
+        PaymentRequirementsV1,
+    )
+
+    enable_auto_pay(monkeypatch)
+    calls = []
+
+    class FakeV1Scheme:
+        scheme = "exact"
+
+        def create_payment_payload(self, _requirements):
+            calls.append("sign")
+            return {"fake": "signature"}
+
+    required = PaymentRequiredV1(
+        accepts=[
+            PaymentRequirementsV1(
+                scheme="exact",
+                network="base",
+                maxAmountRequired=bridge.PRICE_ATOMIC,
+                resource="https://slfguardian.com/v1/audit",
+                payTo=bridge.SLF_PAY_TO,
+                asset=bridge.BASE_USDC,
+                maxTimeoutSeconds=60,
+            )
+        ]
+    )
+    client = x402.x402ClientSync()
+    client.set_spend_controls(False)
+    client.register_v1("base", FakeV1Scheme())
     client.on_before_payment_creation(
         bridge.payment_policy_hook(
             "https://slfguardian.com", "/v1/audit", tmp_path / "spend.json"

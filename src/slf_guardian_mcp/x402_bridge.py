@@ -234,6 +234,12 @@ def reserve_daily_budget(
     ambiguous network outcome. This favors an unused budget over an accidental
     overspend. The local ledger is a guardrail, not a blockchain balance check.
     """
+    if os.name == "nt":
+        return (
+            False,
+            "Automatic x402 is disabled on Windows until a private ACL-backed "
+            "budget ledger is available.",
+        )
     target = Path(state_file) if state_file else _state_file()
     budget_atomic = _budget_atomic_from_environment()
     payment_atomic = int(PRICE_ATOMIC)
@@ -255,8 +261,8 @@ def reserve_daily_budget(
         if hasattr(os, "O_NOFOLLOW"):
             flags |= os.O_NOFOLLOW
         lock_fd = os.open(str(lock_path), flags, 0o600)
-        os.fchmod(lock_fd, 0o600)
         with os.fdopen(lock_fd, "r+b") as lock_handle:
+            os.fchmod(lock_handle.fileno(), 0o600)
             _lock_file(lock_handle)
             try:
                 state = {"utc_day": today, "reserved_atomic": 0}
@@ -430,6 +436,11 @@ def _get_payment_runtime(api_base: str, endpoint: str) -> Tuple[Any, str, Any]:
         if not _safe_api_base(api_base) or endpoint not in ALLOWED_ENDPOINTS:
             raise PaymentBridgeError(
                 "x402 is restricted to the canonical SLF Guardian HTTPS API."
+            )
+        if os.name == "nt":
+            raise PaymentBridgeError(
+                "Automatic x402 is disabled on Windows until a private ACL-backed "
+                "budget ledger is available."
             )
         try:
             import requests
