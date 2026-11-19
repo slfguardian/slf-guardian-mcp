@@ -183,10 +183,42 @@ on the PATH inherited by the client. If the server starts but a tool returns
 `missing_key` or `invalid_key`, check that `SLF_API_KEY` is available to that
 client and restart it. Use the client's MCP/server log view for startup errors.
 
-The local stdio MCP package uses the API key. The HTTP API separately supports
-x402 pay-per-call, but the published stdio MCP release does not create a wallet
-or sign payments. See the [HTTP API documentation](https://slfguardian.com/api)
-for direct API and payment details.
+## Optional x402 buyer payments
+
+The normal stdio setup above uses the API key and remains the recommended
+default. The separate optional buyer bridge is disabled unless the API key is
+absent and `SLF_X402_AUTO_PAY=true` is explicitly set. It never falls back from
+a failed API-key request to paid mode. Install the optional extra with Python
+3.10 or newer:
+
+```bash
+pip install 'slf-guardian-mcp[x402]'
+```
+
+The bridge accepts only the canonical `https://slfguardian.com` API routes,
+Base mainnet, canonical Base USDC, the configured SLF recipient, and exactly
+0.01 USDC per call. Its local daily reservation cap defaults to 0.10 USDC per
+UTC day and can be changed with `SLF_X402_MAX_DAILY_USDC`. The cap is local,
+not an on-chain balance or a substitute for limiting wallet funds; deleting or
+rolling back the ledger can reset it, and separate installations do not share
+it. For a stronger limit, use a dedicated buyer wallet funded only with the
+amount you are willing to spend and keep its state directory persistent.
+
+The bridge needs `CDP_API_KEY_ID`, `CDP_API_KEY_SECRET`, and
+`CDP_WALLET_SECRET` from the customer's local secret manager. Never paste those
+values in chat or commit them. On the first explicitly enabled call, CDP may
+create or reuse the customer's named buyer account; this is separate from SLF
+Guardian's receiving address. Installing the package alone creates no wallet,
+sends no payment, and funds nothing. A timeout with uncertain outcome keeps the
+amount reserved until the next UTC day. Windows fails closed because the ledger
+requires POSIX permissions and locking.
+
+An x402 402 challenge may cause one payment-authenticated HTTP retry to fulfill
+that quote. The bridge does not retry a failed MCP tool call and blocks a second
+payment signature in one call. This is a customer-side buyer feature, **not** a
+seller-side remote x402 MCP server; it does not itself prove a settled payment,
+CDP Bazaar indexing, or revenue. Read the [HTTP API and payment details](https://slfguardian.com/api)
+before enabling paid calls.
 
 ## What it catches
 

@@ -24,6 +24,12 @@ classifiers = [
 ]
 dependencies = []
 
+[project.optional-dependencies]
+x402 = [
+  "x402[evm,requests]==2.28.0",
+  "cdp-sdk==1.53.0",
+]
+
 [project.urls]
 Homepage = "https://slfguardian.com"
 Documentation = "https://github.com/slfguardian/slf-guardian-mcp#install-in-about-two-minutes"

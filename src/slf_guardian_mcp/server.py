@@ -11,6 +11,7 @@ should ask before it acts:
   scan_site      - passive outside-in security check of a website
 
 Set SLF_API_KEY (get one free: POST https://slfguardian.com/v1/keys).
+Optional x402 auto-pay is off by default and requires explicit local configuration.
 """
 
 from __future__ import annotations
@@ -48,9 +49,9 @@ SERVICE_LIMITS_NOTE = (
     "on 429, wait for Retry-After and do not retry in a loop. A pass is not "
     "proof of safety. If verdict is block, do not proceed; if review, show the "
     "evidence and ask the user; if warn, follow the agent's normal approval "
-    "policy. The public API lists $0.01 per call after the free credits; direct "
-    "HTTP x402 payment is also available. This stdio server does not sign or "
-    "submit payments."
+    "policy. The public API lists $0.01 per call after the free credits. By "
+    "default this stdio server never signs or submits payments; its optional "
+    "x402 buyer bridge is disabled unless explicitly enabled and configured."
 )
 TOOL_LIMITS_NOTE = {
     "audit_code": " Up to 40 files and 400 KB per code-audit call.",
@@ -478,6 +479,22 @@ def _validate_success_response(path, data, request_payload):
 
 def call_api(path: str, payload: dict) -> dict:
     if not API_KEY:
+        if os.environ.get("SLF_X402_AUTO_PAY", "").strip().lower() == "true":
+            timeout = _configured_timeout()
+            if timeout is None:
+                return {"ok": False, "error": "invalid_config",
+                        "hint": "SLF_TIMEOUT must be a finite number greater than 0 and at most 600 seconds."}
+            if not _api_base_is_secure():
+                return {"ok": False, "error": "invalid_config",
+                        "hint": "SLF_API_BASE must use HTTPS; x402 also requires the canonical slfguardian.com host."}
+            try:
+                from . import x402_bridge
+            except ImportError:
+                return {"ok": False, "error": "x402_unavailable",
+                        "hint": "Install slf-guardian-mcp[x402] on Python 3.10+; no payment was made."}
+            return x402_bridge.call_paid_api(
+                path, payload, API_BASE, timeout, _validate_success_response
+            )
         return {"ok": False, "error": "missing_key",
                 "hint": "Set SLF_API_KEY. Free key: "
                         "curl -X POST https://slfguardian.com/v1/keys "
