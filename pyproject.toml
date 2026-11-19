@@ -4,15 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slf-guardian-mcp"
-version = "1.2.1"
-description = "MCP server with six security checks an AI agent runs before it delivers code, installs a package, runs a command or opens a link"
+version = "1.2.2"
+description = "MCP security checks for AI agents before they deliver code, install dependencies, run commands, read untrusted content, or open links"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "SLF Guardian", email = "team@slfguardian.com" }]
-keywords = ["mcp", "security", "ai-agent", "prompt-injection", "slopsquatting",
-            "supply-chain", "code-audit", "llm-tools"]
+keywords = ["mcp", "mcp-security", "security", "ai-agent", "agent-security",
+            "ai-security", "prompt-injection", "slopsquatting", "supply-chain",
+            "supply-chain-security", "coding-agent", "code-audit", "llm-tools"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
