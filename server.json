@@ -2,18 +2,20 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.slfguardian/slf-guardian-mcp",
   "title": "SLF Guardian",
-  "description": "Safety checks an agent runs before it acts: packages, commands, prompt injection, links, code.",
+  "description": "Static safety checks before agents install packages, run commands, read links, or deliver code.",
   "repository": {
     "url": "https://github.com/slfguardian/slf-guardian-mcp",
     "source": "github"
   },
   "websiteUrl": "https://slfguardian.com/api",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "packages": [
     {
       "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
       "identifier": "slf-guardian-mcp",
-      "version": "1.2.0",
+      "version": "1.2.1",
+      "runtimeHint": "uvx",
       "transport": { "type": "stdio" },
       "environmentVariables": [
         {

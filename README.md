@@ -1,6 +1,7 @@
 # SLF Guardian MCP
 
 [![SLF Guardian MCP server](https://mcprush.com/badge/slf-guardian-mcp/card.svg)](https://mcprush.com/to/slf-guardian-mcp?ref=badge)
+[![CI](https://github.com/slfguardian/slf-guardian-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/slfguardian/slf-guardian-mcp/actions/workflows/ci.yml)
 
 <!-- mcp-name: io.github.slfguardian/slf-guardian-mcp -->
 
@@ -53,6 +54,17 @@ curl -X POST https://slfguardian.com/v1/keys \
 ```
 
 1,000 calls are free per API key. The raw key is shown once.
+
+Each valid tool call uses one API credit. The key is limited to 20 calls per
+minute; batch inputs accept up to 20 items where supported, and a code audit
+accepts up to 40 files and 400 KB. Documented invalid-input `400` responses are
+not billed. After the free credits, the API lists $0.01 per call.
+
+The HTTP API also supports pay-per-call x402 ($0.01 USDC on Base). This package
+is a local stdio MCP server that authenticates with `SLF_API_KEY`; it does not
+create a wallet, sign payments, or provide a payment-enabled remote MCP
+transport. Use the [HTTP API documentation](https://slfguardian.com/api) for
+x402 setup and payment requirements.
 
 ## Configure your client
 
