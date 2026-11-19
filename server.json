@@ -1,8 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.slfguardian/slf-guardian-mcp",
-  "title": "SLF Guardian",
-  "description": "Static safety checks before agents install packages, run commands, read links, or deliver code.",
+  "title": "SLF Guardian MCP",
+  "description": "Six pre-action checks: code, packages, prompts, commands, domains, authorized passive site scans.",
   "repository": {
     "url": "https://github.com/slfguardian/slf-guardian-mcp",
     "source": "github"
