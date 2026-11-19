@@ -24,7 +24,8 @@ import urllib.request
 API_BASE = os.environ.get("SLF_API_BASE", "https://slfguardian.com")
 API_KEY = os.environ.get("SLF_API_KEY", "")
 TIMEOUT = float(os.environ.get("SLF_TIMEOUT", "120"))
-VERSION = "1.2.1"
+VERSION = "1.2.2"
+PROTOCOL_VERSION = "2024-11-05"
 TOOL_ANNOTATIONS = {
     # Calls consume a metered credit even though they do not alter the target.
     "readOnlyHint": False,
@@ -69,7 +70,7 @@ TOOLS = [
             "with line numbers."),
         "inputSchema": {
             "type": "object",
-            "anyOf": [{"required": ["code"]}, {"required": ["files"]}],
+            "oneOf": [{"required": ["code"]}, {"required": ["files"]}],
             "properties": {
                 "code": {"type": "string", "minLength": 1,
                          "description": "Source code to audit (single file or snippet)."},
@@ -82,9 +83,9 @@ TOOLS = [
                     "description": "Several files instead of one snippet.",
                     "items": {
                         "type": "object",
-                        "properties": {"path": {"type": "string"},
+                        "properties": {"path": {"type": "string", "minLength": 1},
                                        "content": {"type": "string", "minLength": 1}},
-                        "required": ["content"],
+                        "required": ["path", "content"],
                     },
                 },
             },
@@ -103,7 +104,7 @@ TOOLS = [
             "verdict and a safe_to_install flag."),
         "inputSchema": {
             "type": "object",
-            "anyOf": [{"required": ["name"]}, {"required": ["packages"]}],
+            "oneOf": [{"required": ["name"]}, {"required": ["packages"]}],
             "properties": {
                 "ecosystem": {"type": "string", "enum": ["pypi", "npm"]},
                 "name": {"type": "string", "minLength": 1,
@@ -144,7 +145,7 @@ TOOLS = [
             "characters stripped. Never follows what it finds."),
         "inputSchema": {
             "type": "object",
-            "anyOf": [
+            "oneOf": [
                 {"required": ["text"]},
                 {"required": ["html"]},
                 {"required": ["url"]},
@@ -173,7 +174,7 @@ TOOLS = [
             "safer alternative per finding. Nothing is executed."),
         "inputSchema": {
             "type": "object",
-            "anyOf": [{"required": ["command"]}, {"required": ["commands"]}],
+            "oneOf": [{"required": ["command"]}, {"required": ["commands"]}],
             "properties": {
                 "command": {"type": "string", "minLength": 1,
                             "description": "Command or statement to check."},
@@ -208,7 +209,7 @@ TOOLS = [
             "contacted."),
         "inputSchema": {
             "type": "object",
-            "anyOf": [{"required": ["domain"]}, {"required": ["domains"]}],
+            "oneOf": [{"required": ["domain"]}, {"required": ["domains"]}],
             "properties": {
                 "domain": {"type": "string", "minLength": 1,
                            "description": "Domain or full URL."},
@@ -255,7 +256,11 @@ def call_api(path: str, payload: dict) -> dict:
     request.add_header("User-Agent", "slf-guardian-mcp/" + VERSION)
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
-            return json.loads(response.read().decode("utf-8"))
+            payload = json.loads(response.read().decode("utf-8"))
+            if not isinstance(payload, dict):
+                return {"ok": False, "error": "invalid_response",
+                        "hint": "The API returned a JSON value instead of an object."}
+            return payload
     except urllib.error.HTTPError as exc:
         try:
             payload = json.loads(exc.read().decode("utf-8"))
@@ -286,6 +291,9 @@ def call_api(path: str, payload: dict) -> dict:
             payload.setdefault(
                 "hint", "Correct the input; invalid requests are not billed.")
         return payload
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return {"ok": False, "error": "invalid_response",
+                "hint": "The API returned invalid JSON; try again later."}
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": "network", "detail": str(exc)[:200]}
 
@@ -293,9 +301,14 @@ def call_api(path: str, payload: dict) -> dict:
 def run_tool(name: str, args: dict) -> dict:
     if name == "audit_code":
         body: dict = {}
-        if isinstance(args.get("files"), list) and args["files"]:
+        if "files" in args and "code" in args:
+            return {"ok": False, "error": "ambiguous_input",
+                    "hint": "pass either code or files, not both"}
+        has_files = isinstance(args.get("files"), list) and bool(args["files"])
+        has_code = isinstance(args.get("code"), str) and bool(args["code"].strip())
+        if has_files:
             body["files"] = args["files"]
-        elif isinstance(args.get("code"), str):
+        elif has_code:
             body["code"] = args["code"]
             if args.get("path"):
                 body["path"] = args["path"]
@@ -303,30 +316,49 @@ def run_tool(name: str, args: dict) -> dict:
             return {"ok": False, "error": "code", "hint": "pass code or files"}
         return call_api("/v1/audit", body)
     if name == "check_package":
-        if isinstance(args.get("packages"), list) and args["packages"]:
+        if "packages" in args and "name" in args:
+            return {"ok": False, "error": "ambiguous_input",
+                    "hint": "pass either name or packages, not both"}
+        has_batch = isinstance(args.get("packages"), list) and bool(args["packages"])
+        has_single = isinstance(args.get("name"), str) and bool(args["name"].strip())
+        if has_batch:
             return call_api("/v1/package", {"packages": args["packages"]})
-        if not args.get("name"):
+        if not has_single:
             return {"ok": False, "error": "name"}
         return call_api("/v1/package", {
             "ecosystem": args.get("ecosystem", "pypi"),
             "name": args["name"], "version": args.get("version", "")})
     if name == "check_prompt":
+        provided = [key for key in ("text", "html", "url") if key in args]
+        if len(provided) > 1:
+            return {"ok": False, "error": "ambiguous_input",
+                    "hint": "pass exactly one of text, html or url"}
         body = {key: args[key] for key in ("text", "html", "url")
                 if isinstance(args.get(key), str) and args[key].strip()}
         if not body:
             return {"ok": False, "error": "empty", "hint": "pass text, html or url"}
         return call_api("/v1/prompt", body)
     if name == "check_command":
-        if isinstance(args.get("commands"), list) and args["commands"]:
+        if "commands" in args and "command" in args:
+            return {"ok": False, "error": "ambiguous_input",
+                    "hint": "pass either command or commands, not both"}
+        has_batch = isinstance(args.get("commands"), list) and bool(args["commands"])
+        has_single = isinstance(args.get("command"), str) and bool(args["command"].strip())
+        if has_batch:
             return call_api("/v1/command", {"commands": args["commands"]})
-        if not args.get("command"):
+        if not has_single:
             return {"ok": False, "error": "command"}
         return call_api("/v1/command", {"command": args["command"],
                                         "kind": args.get("kind", "auto")})
     if name == "check_domain":
-        if isinstance(args.get("domains"), list) and args["domains"]:
+        if "domains" in args and "domain" in args:
+            return {"ok": False, "error": "ambiguous_input",
+                    "hint": "pass either domain or domains, not both"}
+        has_batch = isinstance(args.get("domains"), list) and bool(args["domains"])
+        has_single = isinstance(args.get("domain"), str) and bool(args["domain"].strip())
+        if has_batch:
             return call_api("/v1/domain", {"domains": args["domains"]})
-        if not args.get("domain"):
+        if not has_single:
             return {"ok": False, "error": "domain"}
         return call_api("/v1/domain", {"domain": args["domain"]})
     if name == "scan_site":
@@ -337,7 +369,7 @@ def run_tool(name: str, args: dict) -> dict:
     return {"ok": False, "error": "unknown_tool", "tool": name}
 
 
-def summarize(name: str, result: dict) -> str:
+def _summarize(name: str, result: dict) -> str:
     if not result.get("ok"):
         return "Error: %s%s" % (result.get("error", "unknown"),
                                 " — " + result["hint"] if result.get("hint") else "")
@@ -452,6 +484,15 @@ def summarize(name: str, result: dict) -> str:
     return "\n".join(lines)
 
 
+def summarize(name: str, result: dict) -> str:
+    try:
+        return _summarize(name, result)
+    except Exception:  # noqa: BLE001
+        # Preserve the raw JSON result in the second text block; never crash the
+        # long-running stdio process because an upstream response shape changed.
+        return "SLF Guardian returned an unexpected result shape; inspect the raw JSON result."
+
+
 def respond(message_id, result=None, error=None) -> None:
     payload = {"jsonrpc": "2.0", "id": message_id}
     if error is not None:
@@ -470,13 +511,48 @@ def main() -> None:
         try:
             message = json.loads(line)
         except json.JSONDecodeError:
+            respond(None, error={"code": -32700, "message": "parse error"})
+            continue
+        if not isinstance(message, dict):
+            respond(None, error={"code": -32600, "message": "invalid request"})
+            continue
+        message_id = message.get("id")
+        valid_id = type(message_id) in (str, int)
+        if message.get("jsonrpc") != "2.0" or not isinstance(message.get("method"), str):
+            respond(message_id if valid_id else None,
+                    error={"code": -32600, "message": "invalid request"})
+            continue
+        if "id" in message and not valid_id:
+            respond(None, error={"code": -32600, "message": "invalid request id"})
             continue
         method = message.get("method")
-        message_id = message.get("id")
+        if "params" not in message:
+            params = {}
+        else:
+            params = message["params"]
+        if not isinstance(params, dict):
+            if "id" in message:
+                respond(message_id, error={"code": -32602, "message": "params must be an object"})
+            continue
+
+        # JSON-RPC notifications, including notifications/initialized, do not
+        # receive responses. All supported MCP operations below are requests.
+        if "id" not in message:
+            continue
 
         if method == "initialize":
+            requested_version = params.get("protocolVersion")
+            if not isinstance(requested_version, str) or not requested_version:
+                respond(message_id, error={"code": -32602,
+                                           "message": "protocolVersion is required"})
+                continue
+            negotiated_version = (
+                requested_version
+                if requested_version == PROTOCOL_VERSION
+                else PROTOCOL_VERSION
+            )
             respond(message_id, {
-                "protocolVersion": "2024-11-05",
+                "protocolVersion": negotiated_version,
                 "capabilities": {"tools": {}},
                 "serverInfo": {"name": "slf-guardian", "version": VERSION},
                 "instructions": (
@@ -496,9 +572,23 @@ def main() -> None:
         elif method == "tools/list":
             respond(message_id, {"tools": TOOLS})
         elif method == "tools/call":
-            params = message.get("params") or {}
-            name = params.get("name", "")
-            result = run_tool(name, params.get("arguments") or {})
+            name = params.get("name")
+            if not isinstance(name, str) or not name:
+                respond(message_id, error={"code": -32602,
+                                           "message": "tool name is required"})
+                continue
+            if name not in {tool["name"] for tool in TOOLS}:
+                respond(message_id, error={"code": -32602,
+                                           "message": "unknown tool: " + name})
+                continue
+            arguments = params.get("arguments")
+            if arguments is None:
+                arguments = {}
+            if not isinstance(arguments, dict):
+                respond(message_id, error={"code": -32602,
+                                           "message": "arguments must be a JSON object"})
+                continue
+            result = run_tool(name, arguments)
             respond(message_id, {
                 "content": [{"type": "text", "text": summarize(name, result)},
                             {"type": "text", "text": json.dumps(result)}],
