@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.2
+
+- Negotiate the supported MCP protocol version during initialization.
+- Return JSON-RPC errors for malformed requests, invalid parameters, and unknown tools.
+- Align the code-audit file schema with the API's required `path` and `content` fields.
+- Reject ambiguous single-item/batch inputs before making billable API calls.
+- Handle unexpected or invalid API response shapes without crashing the stdio server.
+- Improve registry and PyPI discovery metadata and document the distinct API-key and HTTP x402 paths.
+
 ## 1.2.1
 
 - Align package, MCP runtime, and registry manifest versions.
