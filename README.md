@@ -9,8 +9,12 @@ Six security checks an AI agent can call **before** it acts — before it delive
 code, installs a dependency, runs a shell or SQL command, opens a link or reads
 an untrusted page.
 
-One file, no dependencies, stdio transport. Works with Claude Desktop, Cursor,
-Cline, Windsurf, Continue and anything else that speaks MCP.
+Find and install it from the [official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.slfguardian%2Fslf-guardian-mcp&limit=10)
+or [PyPI](https://pypi.org/project/slf-guardian-mcp/). Setup guides are below.
+
+Local stdio server with no third-party runtime dependencies. Copy-paste setup
+guides are provided for Claude Code, Cursor, Codex, and VS Code Copilot; it can
+also run in other clients that support local stdio MCP servers.
 
 | Tool | The question it answers |
 |---|---|
@@ -37,47 +41,145 @@ Call the relevant tool **before** performing the action, not after it:
 
 If the verdict is `block`, do not perform the action. If it is `review`, stop and ask the user for a decision while showing the evidence. If it is `warn`, continue only under the agent's normal approval policy. A `pass` is not proof that content is safe.
 
-## Install
+## Install in about two minutes
+
+SLF Guardian runs locally as a standard-input/output (stdio) MCP server. The
+released package has no third-party runtime dependencies. You can find it in the
+[official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.slfguardian%2Fslf-guardian-mcp&limit=10)
+or on [PyPI](https://pypi.org/project/slf-guardian-mcp/). If your MCP client has
+a Registry install button, search for **io.github.slfguardian/slf-guardian-mcp**
+and use it. Otherwise, copy the setup for your client below.
+
+The examples pin the currently published version, `1.2.1`, so every client
+installs the same reviewed release. They use `uvx`, which creates an isolated
+environment and launches the PyPI entry point. If `uvx` is not installed, set
+up `uv` using its [official installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
+### 1. Create your free API key
+
+Replace the email with yours and run this once. The response contains a key
+shown only once; store it in your operating system or client secret store. Do
+not paste the real key into a shared or committed JSON/TOML file.
 
 ```bash
-pip install slf-guardian-mcp
-# or straight from this repository
-pip install git+https://github.com/slfguardian/slf-guardian-mcp
-```
-
-## Get a key
-
-```bash
-curl -X POST https://slfguardian.com/v1/keys \
+curl -fsS -X POST https://slfguardian.com/v1/keys \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com"}'
 ```
 
-1,000 calls are free per API key. The raw key is shown once.
+Each key starts with 1,000 free calls. Each valid tool call uses one credit;
+the limit is 20 calls per minute. After the free credits, the API lists
+$0.01 per call.
 
-Each valid tool call uses one API credit. The key is limited to 20 calls per
-minute; batch inputs accept up to 20 items where supported, and a code audit
-accepts up to 40 files and 400 KB. Documented invalid-input `400` responses are
-not billed. After the free credits, the API lists $0.01 per call.
+For a terminal-launched client on macOS or Linux, enter the key without echoing
+it or placing it in shell history, then start the client from that same
+terminal:
 
-The HTTP API also supports pay-per-call x402 ($0.01 USDC on Base). This package
-is a local stdio MCP server that authenticates with `SLF_API_KEY`; it does not
-create a wallet, sign payments, or provide a payment-enabled remote MCP
-transport. Use the [HTTP API documentation](https://slfguardian.com/api) for
-x402 setup and payment requirements.
+```bash
+read -rsp "SLF API key: " SLF_API_KEY; printf '\n'; export SLF_API_KEY
+```
 
-## Configure your client
+### 2. Add it to your MCP client
+
+Make `SLF_API_KEY` available to the client process through your OS secret
+manager or shell environment. The examples below reference that variable; they
+do not embed a real key. If your client runs remotely, the variable must be
+available on the machine or container that launches the MCP server. These
+examples use Bash syntax where commands are shown; the JSON/TOML blocks can be
+copied into the corresponding files on any supported OS.
+
+#### Claude Code
+
+See the [official Claude Code MCP docs](https://code.claude.com/docs/en/mcp).
+
+Run in a terminal where `SLF_API_KEY` is set:
+
+```bash
+claude mcp add-json slf-guardian \
+  '{"type":"stdio","command":"uvx","args":["--from","slf-guardian-mcp==1.2.1","slf-guardian-mcp"],"env":{"SLF_API_KEY":"${SLF_API_KEY}"}}' \
+  --scope user
+claude mcp get slf-guardian
+```
+
+The `user` scope makes it available across projects. Restart Claude Code if it
+was already open before you set the environment variable.
+
+#### Cursor
+
+See the [official Cursor MCP docs](https://cursor.com/docs/mcp).
+
+In **Cursor Settings → Tools & MCP**, open the MCP configuration. For a
+user-wide setup, create or edit `~/.cursor/mcp.json`:
 
 ```json
 {
   "mcpServers": {
     "slf-guardian": {
-      "command": "slf-guardian-mcp",
-      "env": { "SLF_API_KEY": "slf_live_..." }
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"],
+      "env": { "SLF_API_KEY": "${env:SLF_API_KEY}" }
     }
   }
 }
 ```
+
+Restart Cursor, then check the MCP server status and logs in **Settings → Tools & MCP**.
+
+#### OpenAI Codex CLI and the Codex IDE extension
+
+See the [official Codex MCP docs](https://developers.openai.com/codex/mcp).
+
+Add this to `~/.codex/config.toml`. The Codex CLI, desktop app, and IDE
+extension share this configuration:
+
+```toml
+[mcp_servers.slf_guardian]
+command = "uvx"
+args = ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"]
+env_vars = ["SLF_API_KEY"]
+```
+
+Start Codex from an environment that provides `SLF_API_KEY`, then run
+`codex mcp list` or use `/mcp` in the Codex TUI to confirm it connected.
+
+#### VS Code Copilot
+
+See Microsoft's [official VS Code MCP configuration reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration).
+
+For a user-wide Copilot setup, create or edit
+`~/.copilot/mcp-config.json` (or `$COPILOT_HOME/mcp-config.json` if
+`COPILOT_HOME` is set):
+
+```json
+{
+  "mcpServers": {
+    "slf-guardian": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"],
+      "env": { "SLF_API_KEY": "${SLF_API_KEY}" },
+      "tools": ["*"]
+    }
+  }
+}
+```
+
+Open **Chat: Open Customizations → MCP Servers** and verify the server in the
+Copilot session. For a remote or container session, set the variable in that
+remote environment; a local shell variable is not forwarded automatically.
+
+### Troubleshooting
+
+If the client says `uvx` is not found, install `uv` and ensure its executable is
+on the PATH inherited by the client. If the server starts but a tool returns
+`missing_key` or `invalid_key`, check that `SLF_API_KEY` is available to that
+client and restart it. Use the client's MCP/server log view for startup errors.
+
+The local stdio MCP package uses the API key. The HTTP API separately supports
+x402 pay-per-call, but the published stdio MCP release does not create a wallet
+or sign payments. See the [HTTP API documentation](https://slfguardian.com/api)
+for direct API and payment details.
 
 ## What it catches
 

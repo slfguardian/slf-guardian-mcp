@@ -5,14 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "slf-guardian-mcp"
 version = "1.2.1"
-description = "MCP server with six security checks an AI agent runs before it delivers code, installs a package, runs a command or opens a link"
+description = "Pre-action security checks for AI agents: code, packages, prompts, commands, domains, and websites"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "SLF Guardian", email = "team@slfguardian.com" }]
-keywords = ["mcp", "security", "ai-agent", "prompt-injection", "slopsquatting",
-            "supply-chain", "code-audit", "llm-tools"]
+keywords = ["mcp", "mcp-server", "mcp-registry", "mcp-tools", "security",
+            "ai-agent", "agent-security", "claude-code", "cursor", "codex",
+            "github-copilot", "prompt-injection", "slopsquatting",
+            "supply-chain-security", "static-analysis", "code-audit"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -23,10 +25,11 @@ dependencies = []
 
 [project.urls]
 Homepage = "https://slfguardian.com"
-Documentation = "https://slfguardian.com/api"
+Documentation = "https://github.com/slfguardian/slf-guardian-mcp#install-in-about-two-minutes"
 API = "https://slfguardian.com/openapi.json"
 Repository = "https://github.com/slfguardian/slf-guardian-mcp"
 Issues = "https://github.com/slfguardian/slf-guardian-mcp/issues"
+MCPRegistry = "https://registry.modelcontextprotocol.io/v0/servers?search=io.github.slfguardian%2Fslf-guardian-mcp&limit=10"
 
 [project.scripts]
 slf-guardian-mcp = "slf_guardian_mcp.server:main"
