@@ -24,11 +24,38 @@ import urllib.request
 API_BASE = os.environ.get("SLF_API_BASE", "https://slfguardian.com")
 API_KEY = os.environ.get("SLF_API_KEY", "")
 TIMEOUT = float(os.environ.get("SLF_TIMEOUT", "120"))
-VERSION = "1.2.0"
+VERSION = "1.2.1"
+TOOL_ANNOTATIONS = {
+    # Calls consume a metered credit even though they do not alter the target.
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": False,
+    "openWorldHint": True,
+}
+SERVICE_LIMITS_NOTE = (
+    " Each valid API call uses one credit; every key starts with 1,000 free "
+    "calls; the limit is 20 calls per minute per key. On HTTP 400, fix the "
+    "input; on 401, fix the API key; on 402, stop and resolve credits/payment; "
+    "on 429, wait for Retry-After and do not retry in a loop. A pass is not "
+    "proof of safety. If verdict is block, do not proceed; if review, show the "
+    "evidence and ask the user; if warn, follow the agent's normal approval "
+    "policy. The public API lists $0.01 per call after the free credits; direct "
+    "HTTP x402 payment is also available. This stdio server does not sign or "
+    "submit payments."
+)
+TOOL_LIMITS_NOTE = {
+    "audit_code": " Up to 40 files and 400 KB per code-audit call.",
+    "check_package": " Batch checks are available, up to 20 packages per call.",
+    "check_command": " Batch checks are available, up to 20 commands per call.",
+    "check_domain": " Batch checks are available, up to 20 domains per call.",
+    "check_prompt": " Accepts one text, HTML document, or URL per call.",
+    "scan_site": " Checks one URL/domain per call and performs no active attacks.",
+}
 
 TOOLS = [
     {
         "name": "audit_code",
+        "annotations": dict(TOOL_ANNOTATIONS),
         "description": (
             "Audit source code before delivering or running it. Flags remote "
             "code execution (curl | bash), data exfiltration of environment "
@@ -42,18 +69,21 @@ TOOLS = [
             "with line numbers."),
         "inputSchema": {
             "type": "object",
+            "anyOf": [{"required": ["code"]}, {"required": ["files"]}],
             "properties": {
-                "code": {"type": "string",
+                "code": {"type": "string", "minLength": 1,
                          "description": "Source code to audit (single file or snippet)."},
                 "path": {"type": "string",
                          "description": "Optional file name for the snippet."},
                 "files": {
                     "type": "array",
+                    "minItems": 1,
+                    "maxItems": 40,
                     "description": "Several files instead of one snippet.",
                     "items": {
                         "type": "object",
                         "properties": {"path": {"type": "string"},
-                                       "content": {"type": "string"}},
+                                       "content": {"type": "string", "minLength": 1}},
                         "required": ["content"],
                     },
                 },
@@ -62,6 +92,7 @@ TOOLS = [
     },
     {
         "name": "check_package",
+        "annotations": dict(TOOL_ANNOTATIONS),
         "description": (
             "Check a PyPI or npm package before installing or recommending it. "
             "Asks the registry whether the name exists at all (invented package "
@@ -72,19 +103,23 @@ TOOLS = [
             "verdict and a safe_to_install flag."),
         "inputSchema": {
             "type": "object",
+            "anyOf": [{"required": ["name"]}, {"required": ["packages"]}],
             "properties": {
                 "ecosystem": {"type": "string", "enum": ["pypi", "npm"]},
-                "name": {"type": "string", "description": "Package name."},
+                "name": {"type": "string", "minLength": 1,
+                          "description": "Package name."},
                 "version": {"type": "string",
                             "description": "Optional exact version to check."},
                 "packages": {
                     "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
                     "description": "Check several packages in one call.",
                     "items": {
                         "type": "object",
                         "properties": {
                             "ecosystem": {"type": "string", "enum": ["pypi", "npm"]},
-                            "name": {"type": "string"},
+                            "name": {"type": "string", "minLength": 1},
                             "version": {"type": "string"},
                         },
                         "required": ["ecosystem", "name"],
@@ -95,6 +130,7 @@ TOOLS = [
     },
     {
         "name": "check_prompt",
+        "annotations": dict(TOOL_ANNOTATIONS),
         "description": (
             "Check untrusted text, HTML or a web page for prompt injection "
             "before feeding it to a model. Finds instructions written for the "
@@ -108,17 +144,24 @@ TOOLS = [
             "characters stripped. Never follows what it finds."),
         "inputSchema": {
             "type": "object",
+            "anyOf": [
+                {"required": ["text"]},
+                {"required": ["html"]},
+                {"required": ["url"]},
+            ],
             "properties": {
-                "text": {"type": "string", "description": "Plain text to check."},
-                "html": {"type": "string",
+                "text": {"type": "string", "minLength": 1,
+                          "description": "Plain text to check."},
+                "html": {"type": "string", "minLength": 1,
                          "description": "HTML including hidden markup."},
-                "url": {"type": "string",
+                "url": {"type": "string", "minLength": 1,
                         "description": "Public page to fetch and check."},
             },
         },
     },
     {
         "name": "check_command",
+        "annotations": dict(TOOL_ANNOTATIONS),
         "description": (
             "Check a shell command or SQL statement before running it and say "
             "whether it can be undone. Flags recursive and system-path deletes, "
@@ -130,17 +173,20 @@ TOOLS = [
             "safer alternative per finding. Nothing is executed."),
         "inputSchema": {
             "type": "object",
+            "anyOf": [{"required": ["command"]}, {"required": ["commands"]}],
             "properties": {
-                "command": {"type": "string",
+                "command": {"type": "string", "minLength": 1,
                             "description": "Command or statement to check."},
                 "kind": {"type": "string", "enum": ["shell", "sql", "auto"],
                          "description": "Defaults to auto."},
                 "commands": {
                     "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
                     "description": "Check a sequence in one call.",
                     "items": {
                         "type": "object",
-                        "properties": {"command": {"type": "string"},
+                        "properties": {"command": {"type": "string", "minLength": 1},
                                        "kind": {"type": "string"}},
                         "required": ["command"],
                     },
@@ -150,6 +196,7 @@ TOOLS = [
     },
     {
         "name": "check_domain",
+        "annotations": dict(TOOL_ANNOTATIONS),
         "description": (
             "Check a domain or link before opening it, sending data to it or "
             "installing from it. Uses the public registration record and DNS: "
@@ -161,16 +208,19 @@ TOOLS = [
             "contacted."),
         "inputSchema": {
             "type": "object",
+            "anyOf": [{"required": ["domain"]}, {"required": ["domains"]}],
             "properties": {
-                "domain": {"type": "string",
+                "domain": {"type": "string", "minLength": 1,
                            "description": "Domain or full URL."},
-                "domains": {"type": "array", "items": {"type": "string"},
+                "domains": {"type": "array", "minItems": 1, "maxItems": 20,
+                            "items": {"type": "string", "minLength": 1},
                             "description": "Check several in one call."},
             },
         },
     },
     {
         "name": "scan_site",
+        "annotations": dict(TOOL_ANNOTATIONS),
         "description": (
             "Passive outside-in security check of a website: malware and spam "
             "injection traces, hidden redirects, SSL/TLS certificate state, "
@@ -180,13 +230,16 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "domain": {"type": "string",
+                "domain": {"type": "string", "minLength": 1,
                            "description": "Domain or URL, e.g. example.com"},
             },
             "required": ["domain"],
         },
     },
 ]
+
+for tool in TOOLS:
+    tool["description"] += SERVICE_LIMITS_NOTE + TOOL_LIMITS_NOTE[tool["name"]]
 
 
 def call_api(path: str, payload: dict) -> dict:
@@ -205,9 +258,34 @@ def call_api(path: str, payload: dict) -> dict:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         try:
-            return json.loads(exc.read().decode("utf-8"))
+            payload = json.loads(exc.read().decode("utf-8"))
+            if not isinstance(payload, dict):
+                payload = {}
         except Exception:  # noqa: BLE001
-            return {"ok": False, "error": "http_%d" % exc.code}
+            payload = {}
+        payload.setdefault("ok", False)
+        payload.setdefault("error", "http_%d" % exc.code)
+        payload.setdefault("http_status", exc.code)
+        if exc.code == 401:
+            payload.setdefault(
+                "hint", "Check SLF_API_KEY; do not retry with the same invalid key.")
+        elif exc.code == 402:
+            payload.setdefault(
+                "hint",
+                "Credits may be exhausted or payment is required. This stdio server only forwards SLF_API_KEY; it does not sign or submit payments. Add credits or use the documented direct HTTP x402 API. Do not retry until payment is resolved.",
+            )
+        elif exc.code == 429:
+            retry_after = exc.headers.get("Retry-After") if exc.headers else None
+            wait = " Wait %s seconds." % retry_after if retry_after else " Wait before retrying."
+            payload["retry_after"] = retry_after
+            payload.setdefault(
+                "hint",
+                "Rate limit: at most 20 calls per minute per API key.%s Do not retry in a loop; retry only once after the wait." % wait,
+            )
+        elif exc.code == 400:
+            payload.setdefault(
+                "hint", "Correct the input; invalid requests are not billed.")
+        return payload
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": "network", "detail": str(exc)[:200]}
 
@@ -401,6 +479,17 @@ def main() -> None:
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
                 "serverInfo": {"name": "slf-guardian", "version": VERSION},
+                "instructions": (
+                    "Use the relevant check before installing a package, opening a link, "
+                    "reading untrusted content, executing a shell or SQL command, or "
+                    "delivering code. If verdict is block, do not proceed. If review, "
+                    "show the findings to the user and ask for a decision. If warn, follow "
+                    "the agent's normal approval policy. A pass is not proof of safety. "
+                    "Each valid API call uses one credit; API keys include 1,000 free calls "
+                    "and are limited to 20 calls per minute. On 401, fix the key; on 402, "
+                    "stop and resolve credits/payment; on 429, wait for Retry-After and do "
+                    "not retry in a loop. This stdio server does not sign or submit payments."
+                ),
             })
         elif method == "notifications/initialized":
             continue
