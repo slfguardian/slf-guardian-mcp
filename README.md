@@ -5,9 +5,16 @@
 
 <!-- mcp-name: io.github.slfguardian/slf-guardian-mcp -->
 
-Six security checks an AI agent can call **before** it acts — before it delivers
-code, installs a dependency, runs a shell or SQL command, opens a link or reads
-an untrusted page.
+Give coding agents an evidence-backed security check before they install a
+package, run a shell or SQL command, or deliver code. SLF Guardian is a six-tool
+MCP server an agent can call before those actions; it returns `pass`, `warn`,
+`review` or `block` with findings. It is a policy signal, not an enforcement
+layer: the host agent must call it and honor the result before proceeding.
+
+The clearest first use is checking packages and commands before execution. Add
+code, prompt, domain and passive website checks when they fit the workflow.
+Nothing submitted is executed; website checks are passive and require owner
+authorization.
 
 Find and install it from the [official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.slfguardian%2Fslf-guardian-mcp&limit=10)
 or [PyPI](https://pypi.org/project/slf-guardian-mcp/). Setup guides are below.
@@ -209,6 +216,24 @@ hosting, abuse-heavy TLDs. The site itself is never contacted.
 (`curl | bash`), environment and credential exfiltration, reverse shells,
 destructive commands, hidden base64, hard-coded secrets, install-time hooks,
 `shell=True`, `pickle.loads`, TLS verification turned off.
+
+## Reproducible smoke checks
+
+The repository includes a small, versioned smoke corpus across the six API
+tools. It is **not** an independently labeled accuracy benchmark and does not
+support comparative accuracy claims. Run the offline default with:
+
+```bash
+python3 scripts/run_core_benchmark.py
+```
+
+This dry run makes no requests and uses no credits. Live API cases require both
+`--live` and `--acknowledge-metered-calls` plus a locally configured `SLF_API_KEY`;
+each valid request may consume a free credit or incur the documented fee after
+free credits. The passive `slfguardian.com` scan is excluded unless
+`--include-authorized-site-scan` is explicitly supplied by an authorized
+operator. See [benchmark and activation measurement](docs/benchmark-and-activation.md)
+for the corpus limits and requirements for publishing accuracy or usage claims.
 
 ## Honest limits
 

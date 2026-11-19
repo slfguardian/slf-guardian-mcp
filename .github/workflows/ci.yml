@@ -29,6 +29,8 @@ jobs:
           python -m pip install -e .
       - name: Run tests
         run: python -m pytest -q
+      - name: Verify benchmark dry run is offline
+        run: python scripts/run_core_benchmark.py
       - name: Compile source
         run: python -m compileall -q src
 
