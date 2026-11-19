@@ -253,8 +253,14 @@ metadata and aggregate result counts.
 | Variable | Default | Purpose |
 |---|---|---|
 | `SLF_API_KEY` | — | Required. Your key. |
-| `SLF_API_BASE` | `https://slfguardian.com` | Override the endpoint. |
-| `SLF_TIMEOUT` | `120` | Seconds per call. |
+| `SLF_API_BASE` | `https://slfguardian.com` | Trusted HTTPS endpoint. Redirects are refused to prevent forwarding your bearer key. Plain HTTP is accepted only for local loopback testing. |
+| `SLF_TIMEOUT` | `120` | Positive finite connection/read timeout in seconds, maximum 600. Response-body reads also use a request-start deadline and are capped at 2 MiB. |
+
+The client validates arguments again at runtime even if an MCP host does not
+enforce the advertised JSON Schema. Invalid inputs do not make an API request.
+Non-2xx HTTP responses are always errors; a response body cannot turn one into
+a `pass`. Successful responses must contain the endpoint's required verdict or
+scan fields, otherwise the MCP tool returns an error instead of a safety result.
 
 HTTP API and OpenAPI description: <https://slfguardian.com/api>
 

@@ -36,8 +36,13 @@ async def main() -> None:
                 "path",
                 "content",
             ]
+            # Empty domains are rejected locally before any API/network access.
+            # This exercises tools/call without spending a credit.
+            invalid = await session.call_tool("check_domain", {"domains": []})
+            assert invalid.isError is True
+            assert "invalid_input" in invalid.content[0].text
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-    print("Official MCP SDK stdio smoke test passed (initialize/tools/list).")
+    print("Official MCP SDK stdio smoke test passed (initialize/tools/list/call).")
