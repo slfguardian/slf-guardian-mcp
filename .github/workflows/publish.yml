@@ -19,10 +19,11 @@ jobs:
           python-version: "3.11"
       - name: Run tests
         run: |
-          python -m pip install --upgrade pytest jsonschema
+          python -m pip install --upgrade pytest jsonschema 'mcp>=1.26,<2'
           python -m pip install -e .
           python -m pytest -q
           python -m compileall -q src
+          python tests/mcp_sdk_smoke.py
       - name: Build and inspect distributions
         run: |
           python -m pip install --upgrade build twine

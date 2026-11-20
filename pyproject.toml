@@ -4,17 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slf-guardian-mcp"
-version = "1.2.1"
-description = "Pre-action security checks for AI agents: code, packages, prompts, commands, domains, and websites"
+version = "1.2.2"
+description = "Pre-action security checks for coding agents before packages, commands, code and untrusted content"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "SLF Guardian", email = "team@slfguardian.com" }]
-keywords = ["mcp", "mcp-server", "mcp-registry", "mcp-tools", "security",
-            "ai-agent", "agent-security", "claude-code", "cursor", "codex",
-            "github-copilot", "prompt-injection", "slopsquatting",
-            "supply-chain-security", "static-analysis", "code-audit"]
+keywords = ["mcp", "mcp-server", "mcp-registry", "mcp-tools", "mcp-security",
+            "security", "ai-agent", "agent-security", "ai-security", "coding-agent",
+            "claude-code", "cursor", "codex", "github-copilot", "prompt-injection",
+            "slopsquatting", "supply-chain-security", "static-analysis", "code-audit",
+            "llm-tools"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
@@ -22,6 +23,12 @@ classifiers = [
   "Topic :: Security",
 ]
 dependencies = []
+
+[project.optional-dependencies]
+x402 = [
+  "x402[evm,requests]==2.28.0",
+  "cdp-sdk==1.53.0",
+]
 
 [project.urls]
 Homepage = "https://slfguardian.com"

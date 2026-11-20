@@ -2,19 +2,19 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.slfguardian/slf-guardian-mcp",
   "title": "SLF Guardian MCP",
-  "description": "Six pre-action checks: code, packages, prompts, commands, domains, authorized passive site scans.",
+  "description": "Pre-action coding safety: packages, commands, code, prompts, links and authorized passive scans.",
   "repository": {
     "url": "https://github.com/slfguardian/slf-guardian-mcp",
     "source": "github"
   },
   "websiteUrl": "https://slfguardian.com/api",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "slf-guardian-mcp",
-      "version": "1.2.1",
+      "version": "1.2.2",
       "runtimeHint": "uvx",
       "transport": { "type": "stdio" },
       "environmentVariables": [

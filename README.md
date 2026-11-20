@@ -183,10 +183,44 @@ on the PATH inherited by the client. If the server starts but a tool returns
 `missing_key` or `invalid_key`, check that `SLF_API_KEY` is available to that
 client and restart it. Use the client's MCP/server log view for startup errors.
 
-The local stdio MCP package uses the API key. The HTTP API separately supports
-x402 pay-per-call, but the published stdio MCP release does not create a wallet
-or sign payments. See the [HTTP API documentation](https://slfguardian.com/api)
-for direct API and payment details.
+## Optional x402 buyer payments — unreleased candidate
+
+This buyer bridge is included in the 1.2.2 review candidate but has **not** been
+released to PyPI; the published 1.2.1 client still requires its API key. The
+normal stdio setup above remains the recommended default. In a future release,
+the optional bridge will be disabled unless the API key is absent and
+`SLF_X402_AUTO_PAY=true` is explicitly set. It will not fall back from a failed
+API-key request to paid mode. The planned optional extra requires Python 3.10 or
+newer:
+
+```bash
+pip install 'slf-guardian-mcp[x402]'
+```
+
+The bridge accepts only the canonical `https://slfguardian.com` API routes,
+Base mainnet, canonical Base USDC, the configured SLF recipient, and exactly
+0.01 USDC per call. Its local daily reservation cap defaults to 0.10 USDC per
+UTC day and can be changed with `SLF_X402_MAX_DAILY_USDC`. The cap is local,
+not an on-chain balance or a substitute for limiting wallet funds; deleting or
+rolling back the ledger can reset it, and separate installations do not share
+it. For a stronger limit, use a dedicated buyer wallet funded only with the
+amount you are willing to spend and keep its state directory persistent.
+
+The bridge needs `CDP_API_KEY_ID`, `CDP_API_KEY_SECRET`, and
+`CDP_WALLET_SECRET` from the customer's local secret manager. Never paste those
+values in chat or commit them. On the first explicitly enabled call, CDP may
+create or reuse the customer's named buyer account; this is separate from SLF
+Guardian's receiving address. Installing the package alone creates no wallet,
+sends no payment, and funds nothing. A timeout with uncertain outcome keeps the
+amount reserved until the next UTC day. Windows fails closed because the ledger
+requires POSIX permissions and locking.
+
+An x402 402 challenge may cause one payment-authenticated HTTP retry to fulfill
+that quote. The bridge does not retry a failed MCP tool call and blocks a second
+payment signature in one call. This is a customer-side buyer feature, **not** a
+seller-side remote x402 MCP server; it does not itself prove a settled payment,
+CDP Bazaar indexing, or revenue. Read the [HTTP API and payment details](https://slfguardian.com/api)
+before enabling paid calls.
 
 ## What it catches
 
@@ -253,8 +287,14 @@ metadata and aggregate result counts.
 | Variable | Default | Purpose |
 |---|---|---|
 | `SLF_API_KEY` | — | Required. Your key. |
-| `SLF_API_BASE` | `https://slfguardian.com` | Override the endpoint. |
-| `SLF_TIMEOUT` | `120` | Seconds per call. |
+| `SLF_API_BASE` | `https://slfguardian.com` | Trusted HTTPS endpoint. Redirects are refused to prevent forwarding your bearer key. Plain HTTP is accepted only for local loopback testing. |
+| `SLF_TIMEOUT` | `120` | Positive finite connection/read timeout in seconds, maximum 600. Response-body reads also use a request-start deadline and are capped at 2 MiB. |
+
+The client validates arguments again at runtime even if an MCP host does not
+enforce the advertised JSON Schema. Invalid inputs do not make an API request.
+Non-2xx HTTP responses are always errors; a response body cannot turn one into
+a `pass`. Successful responses must contain the endpoint's required verdict or
+scan fields, otherwise the MCP tool returns an error instead of a safety result.
 
 HTTP API and OpenAPI description: <https://slfguardian.com/api>
 

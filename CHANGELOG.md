@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.2
+
+- Negotiate the supported MCP protocol version during initialization.
+- Return JSON-RPC errors for malformed requests, invalid parameters, and unknown tools.
+- Align the code-audit file schema with the API's required `path` and `content` fields.
+- Reject ambiguous single-item/batch inputs before making billable API calls.
+- Handle unexpected or invalid API response shapes without crashing the stdio server.
+- Improve registry and PyPI discovery metadata and document the distinct API-key and HTTP x402 paths.
+- Refuse API redirects so an authenticated bearer key is not forwarded to a redirect target.
+- Treat all non-2xx responses as errors and validate endpoint-specific success fields before returning a safety verdict.
+- Validate tool arguments at runtime, enforce published batch/audit limits, and bound response reads by size and timeout configuration.
+- Add tests for authentication redirects, fail-closed API bodies, runtime validation, bounded reads, numeric JSON-RPC IDs, notifications, and MCP SDK tool calls.
+- Add an optional x402 buyer bridge, disabled by default and used only when no API key is set and `SLF_X402_AUTO_PAY=true`; enforce exact SLF/Base USDC terms and a local daily reservation cap before signing.
+- Keep CDP signing dependencies optional and document that the bridge spends the customer's separately configured buyer wallet; installation triggers no payment or funding.
+
 ## 1.2.1
 
 - Align package, MCP runtime, and registry manifest versions.
