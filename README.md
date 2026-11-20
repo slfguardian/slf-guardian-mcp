@@ -191,7 +191,9 @@ normal stdio setup above remains the recommended default. In a future release,
 the optional bridge will be disabled unless the API key is absent and
 `SLF_X402_AUTO_PAY=true` is explicitly set. It will not fall back from a failed
 API-key request to paid mode. The planned optional extra requires Python 3.10 or
-newer:
+newer. **Do not run the PyPI install command below until 1.2.2 is published**;
+the current 1.2.1 PyPI package does not include this extra. After that release,
+install it with:
 
 ```bash
 pip install 'slf-guardian-mcp[x402]'
