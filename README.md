@@ -183,13 +183,15 @@ on the PATH inherited by the client. If the server starts but a tool returns
 `missing_key` or `invalid_key`, check that `SLF_API_KEY` is available to that
 client and restart it. Use the client's MCP/server log view for startup errors.
 
-## Optional x402 buyer payments
+## Optional x402 buyer payments — unreleased candidate
 
-The normal stdio setup above uses the API key and remains the recommended
-default. The separate optional buyer bridge is disabled unless the API key is
-absent and `SLF_X402_AUTO_PAY=true` is explicitly set. It never falls back from
-a failed API-key request to paid mode. Install the optional extra with Python
-3.10 or newer:
+This buyer bridge is included in the 1.2.2 review candidate but has **not** been
+released to PyPI; the published 1.2.1 client still requires its API key. The
+normal stdio setup above remains the recommended default. In a future release,
+the optional bridge will be disabled unless the API key is absent and
+`SLF_X402_AUTO_PAY=true` is explicitly set. It will not fall back from a failed
+API-key request to paid mode. The planned optional extra requires Python 3.10 or
+newer:
 
 ```bash
 pip install 'slf-guardian-mcp[x402]'
