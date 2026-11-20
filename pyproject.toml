@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "slf-guardian-mcp"
 version = "1.2.2"
-description = "Pre-action security checks for coding agents before packages, commands, code and untrusted content"
+description = "Local stdio MCP client for hosted pre-action checks on packages, commands, code and untrusted content"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"

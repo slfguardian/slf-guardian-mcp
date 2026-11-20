@@ -15,6 +15,11 @@ The clearest first use is checking packages and commands before execution. Add
 code, prompt, domain and passive website checks when they fit the workflow.
 Nothing submitted is executed; website checks are passive and require owner
 authorization.
+The MCP process runs locally over stdio, but it does not analyze inputs offline:
+each tool call sends its input over HTTPS to SLF Guardian's hosted API. The API
+documents submitted code and prompt content as analyzed in memory and not stored;
+limited billing and operational metadata may be retained as described below.
+Do not submit credentials or secrets.
 
 Find and install it from the [official MCP Registry](https://registry.modelcontextprotocol.io/v0/servers?search=io.github.slfguardian%2Fslf-guardian-mcp&limit=10)
 or [PyPI](https://pypi.org/project/slf-guardian-mcp/). Setup guides are below.
@@ -84,7 +89,11 @@ curl -fsS -X POST https://slfguardian.com/v1/keys \
 
 Each key starts with 1,000 free calls. Each valid tool call uses one credit;
 the limit is 20 calls per minute. After the free credits, the API lists
-$0.01 per call.
+$0.01 per call. Paid API credits currently require a prepaid top-up arranged
+with `team@slfguardian.com`; this is not automatic card billing. Direct HTTP
+x402 payments are available for API callers, but the published 1.2.1 stdio MCP
+package does not sign payments. The optional MCP-side x402 buyer feature is
+described below as an unreleased 1.2.2 candidate.
 
 For a terminal-launched client on macOS or Linux, enter the key without echoing
 it or placing it in shell history, then start the client from that same
