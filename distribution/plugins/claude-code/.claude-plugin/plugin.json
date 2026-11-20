@@ -1,0 +1,18 @@
+{
+  "name": "slf-guardian",
+  "version": "1.0.0",
+  "description": "Pre-action security checks for coding agents using the SLF Guardian MCP.",
+  "author": {
+    "name": "SLF Guardian",
+    "url": "https://slfguardian.com"
+  },
+  "userConfig": {
+    "api_key": {
+      "type": "string",
+      "title": "SLF Guardian API key",
+      "description": "Stored in secure credential storage and passed only to the local SLF Guardian MCP process.",
+      "required": true,
+      "sensitive": true
+    }
+  }
+}

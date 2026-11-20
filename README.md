@@ -23,6 +23,14 @@ Local stdio server with no third-party runtime dependencies. Copy-paste setup
 guides are provided for Claude Code, Cursor, Codex, and VS Code Copilot; it can
 also run in other clients that support local stdio MCP servers.
 
+The repository includes [ready-to-copy client configs and agent quickstarts](distribution/agent-quickstarts.md),
+plus an [Agensi-compatible pre-action skill source](distribution/agensi/slf-guardian-pre-action/SKILL.md).
+Local [Claude Code and Cursor plugin bundles](distribution/plugins/README.md) are also prepared for client testing; they have not been submitted to either marketplace.
+The skill requires the SLF Guardian MCP to be configured separately; it does not
+include an API key or enforce decisions by itself. It is a prepared source asset,
+not an Agensi submission. A [demo recording plan](distribution/demo-recording-plan.md)
+is also available; it is not a video or a claim of a live run.
+
 | Tool | The question it answers |
 |---|---|
 | `audit_code` | Is this code safe to deliver or run? |

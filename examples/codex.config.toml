@@ -1,0 +1,4 @@
+[mcp_servers.slf-guardian]
+command = "uvx"
+args = ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"]
+env_vars = ["SLF_API_KEY"]

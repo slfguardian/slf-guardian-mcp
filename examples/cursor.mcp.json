@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "slf-guardian": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "slf-guardian-mcp==1.2.1",
+        "slf-guardian-mcp"
+      ],
+      "env": {
+        "SLF_API_KEY": "${env:SLF_API_KEY}"
+      }
+    }
+  }
+}
