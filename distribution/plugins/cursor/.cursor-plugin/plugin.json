@@ -2,9 +2,9 @@
   "name": "slf-guardian",
   "version": "1.0.0",
   "description": "Pre-action security checks for coding agents using the SLF Guardian MCP.",
+  "logo": "assets/icon.png",
   "author": {
-    "name": "SLF Guardian",
-    "email": "team@slfguardian.com"
+    "name": "SLF Guardian"
   },
   "variables": {
     "type": "object",
