@@ -20,8 +20,45 @@
       "environmentVariables": [
         {
           "name": "SLF_API_KEY",
-          "description": "SLF Guardian API key (slf_live_...). Get one free: POST https://slfguardian.com/v1/keys",
-          "isRequired": true,
+          "description": "Recommended normal mode: SLF Guardian API key (slf_live_...). 1,000 free calls; create via POST https://slfguardian.com/v1/keys. Optional only when x402 auto-pay is explicitly enabled.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "SLF_X402_AUTO_PAY",
+          "description": "Optional buyer-side payment mode. Must be exactly true; used only when SLF_API_KEY is absent.",
+          "default": "false",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "boolean"
+        },
+        {
+          "name": "SLF_X402_MAX_DAILY_USDC",
+          "description": "Optional local daily spend reservation cap in USDC; default 0.10. Keep the state directory private and persistent.",
+          "default": "0.10",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "number"
+        },
+        {
+          "name": "CDP_API_KEY_ID",
+          "description": "Customer's CDP API key id; required only for explicitly enabled x402 buyer mode. Store in a local secret manager.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "CDP_API_KEY_SECRET",
+          "description": "Customer's CDP API key secret; required only for explicitly enabled x402 buyer mode. Store in a local secret manager.",
+          "isRequired": false,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "CDP_WALLET_SECRET",
+          "description": "Customer's CDP wallet secret; required only for explicitly enabled x402 buyer mode. Store in a local secret manager.",
+          "isRequired": false,
           "isSecret": true,
           "format": "string"
         }
