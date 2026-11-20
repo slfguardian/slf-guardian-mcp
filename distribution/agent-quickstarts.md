@@ -1,8 +1,10 @@
 # Agent install quickstarts
 
-These examples intentionally pin the **currently published PyPI version 1.2.1**. They use `SLF_API_KEY` from the local environment or the client’s secret store; do not put a real key in a checked-in file or shell history. Obtain a key from the [SLF Guardian API](https://slfguardian.com/api). Each key begins with 1,000 free calls; the API lists $0.01/call after those and a 20-call/minute limit.
+These examples intentionally pin the **currently published PyPI version 1.2.1**. They use `SLF_API_KEY` from the local environment or the client’s secret store; do not put a real key in a checked-in file or shell history. Obtain a key from the [SLF Guardian API](https://slfguardian.com/api). Each key begins with 1,000 free calls; the API lists $0.01/call after those and a 20-call/minute limit. Paid API credits currently require a prepaid top-up arranged with `team@slfguardian.com`; this setup does not enable automatic card billing. The API also supports direct HTTP x402 payment, but the published 1.2.1 stdio MCP package does not sign payments.
 
 If `uvx` is unavailable, install `uv` from its [official guide](https://docs.astral.sh/uv/getting-started/installation/). These are the local stdio MCP setup instructions, not a hosted remote service.
+
+**Data flow:** The stdio MCP process runs on the agent's machine, but each tool call sends its input over HTTPS to SLF Guardian's hosted API for analysis. This is not local/offline analysis. The API documents submitted code and prompt content as analyzed in memory and not stored; limited billing and operational metadata may be retained. Do not submit credentials or secrets.
 
 ## Claude Code
 
