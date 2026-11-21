@@ -1,8 +1,8 @@
 # Agent distribution and proof assets
 
-These assets prepare the product work that can be done without a logged-in marketplace UI. Local client examples pin the publicly released PyPI version `1.2.1`; do not switch them to GitHub-only 1.2.2 until it is published.
+These assets prepare the product work that can be done without a logged-in marketplace UI. Local client examples pin the publicly released PyPI version `1.2.2`; these examples now use the published 1.2.2 package.
 
-The repository includes Claude Code and Cursor plugin packages under `plugins/`; each uses client-supported secret configuration, bundles the pre-action skill, and runs the 1.2.1 stdio server. Downloadable archives are `plugins/slf-guardian-claude-code-plugin.zip` and `plugins/slf-guardian-cursor-plugin.zip`. The local format/static checks do not replace opening each actual client; client UI tests remain unrun.
+The repository includes Claude Code and Cursor plugin packages under `plugins/`; each uses client-supported secret configuration, bundles the pre-action skill, and runs the 1.2.2 stdio server. Downloadable archives are `plugins/slf-guardian-claude-code-plugin.zip` and `plugins/slf-guardian-cursor-plugin.zip`. The local format/static checks do not replace opening each actual client; client UI tests remain unrun.
 
 The Agensi skill source under `agensi/slf-guardian-pre-action/` passed the official structural validator and is packaged at `agensi/slf-guardian-pre-action.zip`. Its listing copy and creator-style trigger/edge-case evaluation plan are also provided; the tests have not been run inside live Claude/Cursor/Codex agents and the ZIP has not been uploaded.
 
@@ -12,4 +12,4 @@ The Agensi skill source under `agensi/slf-guardian-pre-action/` passed the offic
 
 `analytics-and-benchmark-next-steps.md` outlines backend telemetry requirements. It is not deployed instrumentation: the API backend source was not available in this workspace.
 
-No external listing submission, outreach, purchase, PyPI/Registry release, wallet action or payment was performed.
+No external listing submission, outreach, purchase, wallet action or payment was performed. PyPI/Registry publication is handled by the separate 1.2.2 release workflow.

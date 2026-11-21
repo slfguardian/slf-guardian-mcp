@@ -1,6 +1,6 @@
 # Local agent plugins — READY FOR CLIENT QA, NOT PUBLISHED
 
-These bundles use the currently published `slf-guardian-mcp==1.2.1`. Each plugin bundle itself is versioned `1.0.0`. No marketplace submission was made. Both packages contain the same 1024px square SLF Guardian shield/check icon; the Claude icon warning is now cleared.
+These bundles use the currently published `slf-guardian-mcp==1.2.2`. Each plugin bundle itself is versioned `1.0.0`. No marketplace submission was made. Both packages contain the same 1024px square SLF Guardian shield/check icon; the Claude icon warning is now cleared.
 
 ## Claude Code
 
@@ -20,4 +20,4 @@ The plugin declares an `SLF_API_KEY` variable and references `${SLF_API_KEY}` in
 
 ## Scope and caveats
 
-Both plugins bundle the same pre-action skill and local stdio MCP setup. They still require the customer to obtain an SLF API key. Each valid call consumes one credit; no API key is included. Package 1.2.2/x402 support remains unreleased, so these bundles deliberately use 1.2.1 and do not enable auto-payment. No login, live API call, credit spend, marketplace submission or payment was performed by these tests.
+Both plugins bundle the same pre-action skill and local stdio MCP setup. They still require the customer to obtain an SLF API key. Each valid call consumes one credit; no API key is included. The published 1.2.2 package includes an optional x402 buyer bridge, but these bundles deliberately use API-key mode and do not enable auto-payment. No login, live API call, credit spend, marketplace submission or payment was performed by these tests.
