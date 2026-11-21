@@ -70,7 +70,7 @@ or on [PyPI](https://pypi.org/project/slf-guardian-mcp/). If your MCP client has
 a Registry install button, search for **io.github.slfguardian/slf-guardian-mcp**
 and use it. Otherwise, copy the setup for your client below.
 
-The examples pin the currently published version, `1.2.1`, so every client
+The examples pin the currently published version, `1.2.2`, so every client
 installs the same reviewed release. They use `uvx`, which creates an isolated
 environment and launches the PyPI entry point. If `uvx` is not installed, set
 up `uv` using its [official installation guide](https://docs.astral.sh/uv/getting-started/installation/).
@@ -90,10 +90,9 @@ curl -fsS -X POST https://slfguardian.com/v1/keys \
 Each key starts with 1,000 free calls. Each valid tool call uses one credit;
 the limit is 20 calls per minute. After the free credits, the API lists
 $0.01 per call. Paid API credits currently require a prepaid top-up arranged
-with `team@slfguardian.com`; this is not automatic card billing. Direct HTTP
-x402 payments are available for API callers, but the published 1.2.1 stdio MCP
-package does not sign payments. The optional MCP-side x402 buyer feature is
-described below as an unreleased 1.2.2 candidate.
+with `team@slfguardian.com`; this is not automatic card billing. Direct HTTP x402 payments are available for API callers. The published 1.2.2
+stdio MCP client also has an optional, disabled-by-default buyer bridge for
+paying the hosted API; it is not a seller-side remote x402 MCP service.
 
 For a terminal-launched client on macOS or Linux, enter the key without echoing
 it or placing it in shell history, then start the client from that same
@@ -120,7 +119,7 @@ Run in a terminal where `SLF_API_KEY` is set:
 
 ```bash
 claude mcp add-json slf-guardian \
-  '{"type":"stdio","command":"uvx","args":["--from","slf-guardian-mcp==1.2.1","slf-guardian-mcp"],"env":{"SLF_API_KEY":"${SLF_API_KEY}"}}' \
+  '{"type":"stdio","command":"uvx","args":["--from","slf-guardian-mcp==1.2.2","slf-guardian-mcp"],"env":{"SLF_API_KEY":"${SLF_API_KEY}"}}' \
   --scope user
 claude mcp get slf-guardian
 ```
@@ -141,7 +140,7 @@ user-wide setup, create or edit `~/.cursor/mcp.json`:
     "slf-guardian": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"],
+      "args": ["--from", "slf-guardian-mcp==1.2.2", "slf-guardian-mcp"],
       "env": { "SLF_API_KEY": "${env:SLF_API_KEY}" }
     }
   }
@@ -160,7 +159,7 @@ extension share this configuration:
 ```toml
 [mcp_servers.slf_guardian]
 command = "uvx"
-args = ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"]
+args = ["--from", "slf-guardian-mcp==1.2.2", "slf-guardian-mcp"]
 env_vars = ["SLF_API_KEY"]
 ```
 
@@ -181,7 +180,7 @@ For a user-wide Copilot setup, create or edit
     "slf-guardian": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"],
+      "args": ["--from", "slf-guardian-mcp==1.2.2", "slf-guardian-mcp"],
       "env": { "SLF_API_KEY": "${SLF_API_KEY}" },
       "tools": ["*"]
     }
@@ -200,17 +199,13 @@ on the PATH inherited by the client. If the server starts but a tool returns
 `missing_key` or `invalid_key`, check that `SLF_API_KEY` is available to that
 client and restart it. Use the client's MCP/server log view for startup errors.
 
-## Optional x402 buyer payments — unreleased candidate
+## Optional x402 buyer payments
 
-This buyer bridge is included in the 1.2.2 review candidate but has **not** been
-released to PyPI; the published 1.2.1 client still requires its API key. The
-normal stdio setup above remains the recommended default. In a future release,
-the optional bridge will be disabled unless the API key is absent and
-`SLF_X402_AUTO_PAY=true` is explicitly set. It will not fall back from a failed
-API-key request to paid mode. The planned optional extra requires Python 3.10 or
-newer. **Do not run the PyPI install command below until 1.2.2 is published**;
-the current 1.2.1 PyPI package does not include this extra. After that release,
-install it with:
+The published 1.2.2 package includes this optional buyer bridge. The normal
+stdio setup above remains the recommended default. Payment is disabled unless
+`SLF_X402_AUTO_PAY=true` is explicitly set and `SLF_API_KEY` is absent. A failed
+API-key request never falls back to paid mode. The optional extra requires
+Python 3.10 or newer. Install it with:
 
 ```bash
 pip install 'slf-guardian-mcp[x402]'

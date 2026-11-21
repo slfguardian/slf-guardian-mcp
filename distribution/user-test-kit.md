@@ -8,7 +8,7 @@ Test whether a developer can install the published MCP, make one successful chec
 
 ## Before the session
 
-- Use only the published package `slf-guardian-mcp==1.2.1` until a newer version is actually released.
+- Use only the published package `slf-guardian-mcp==1.2.2` until a newer version is actually released.
 - Ask the participant not to share API keys, source code, commands containing secrets, private company information, or customer data.
 - Explain that each valid tool call consumes one credit; their key starts with 1,000 free calls and then the listed price is $0.01/call, with a 20-call/minute limit. The participant chooses whether to make any call.
 - Use synthetic package/command examples. Never ask them to run a destructive command; a command may only be sent as text to `check_command`.

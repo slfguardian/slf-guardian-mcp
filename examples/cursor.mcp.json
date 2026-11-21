@@ -5,7 +5,7 @@
       "command": "uvx",
       "args": [
         "--from",
-        "slf-guardian-mcp==1.2.1",
+        "slf-guardian-mcp==1.2.2",
         "slf-guardian-mcp"
       ],
       "env": {

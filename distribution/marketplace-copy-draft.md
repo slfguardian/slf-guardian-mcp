@@ -8,7 +8,7 @@ No directory submission was made by creating this draft. Use only after confirmi
 
 **One-line description:** Six pre-action checks for coding agents: packages, commands, code, prompt injection, domains, and owner-authorized passive site checks.
 
-**Install:** Follow the repository README; pin `slf-guardian-mcp==1.2.1` until a newer release is actually published.
+**Install:** Follow the repository README; pin `slf-guardian-mcp==1.2.2` until a newer release is actually published.
 
 **Claims to avoid:** Automatically blocks OS actions; guarantees safety; runs code; active website pentesting; has users/revenue based on directory totals.
 

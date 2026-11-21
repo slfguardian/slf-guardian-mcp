@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.slfguardian/slf-guardian-mcp",
   "title": "SLF Guardian MCP",
-  "description": "Local stdio MCP client for hosted pre-action checks of packages, commands, code, prompts and domains; passive site scans require authorization.",
+  "description": "Pre-action checks for code, packages, prompts, commands, domains and passive site scans.",
   "repository": {
     "url": "https://github.com/slfguardian/slf-guardian-mcp",
     "source": "github"
@@ -16,7 +16,9 @@
       "identifier": "slf-guardian-mcp",
       "version": "1.2.2",
       "runtimeHint": "uvx",
-      "transport": { "type": "stdio" },
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "SLF_API_KEY",

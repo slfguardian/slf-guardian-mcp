@@ -1,6 +1,6 @@
 # Agent install quickstarts
 
-These examples intentionally pin the **currently published PyPI version 1.2.1**. They use `SLF_API_KEY` from the local environment or the client’s secret store; do not put a real key in a checked-in file or shell history. Obtain a key from the [SLF Guardian API](https://slfguardian.com/api). Each key begins with 1,000 free calls; the API lists $0.01/call after those and a 20-call/minute limit. Paid API credits currently require a prepaid top-up arranged with `team@slfguardian.com`; this setup does not enable automatic card billing. The API also supports direct HTTP x402 payment, but the published 1.2.1 stdio MCP package does not sign payments.
+These examples intentionally pin the **currently published PyPI version 1.2.2**. They use `SLF_API_KEY` from the local environment or the client’s secret store; do not put a real key in a checked-in file or shell history. Obtain a key from the [SLF Guardian API](https://slfguardian.com/api). Each key begins with 1,000 free calls; the API lists $0.01/call after those and a 20-call/minute limit. Paid API credits currently require a prepaid top-up arranged with `team@slfguardian.com`; this setup does not enable automatic card billing. The API also supports direct HTTP x402 payment, but the published 1.2.2 stdio MCP package does not sign payments.
 
 If `uvx` is unavailable, install `uv` from its [official guide](https://docs.astral.sh/uv/getting-started/installation/). These are the local stdio MCP setup instructions, not a hosted remote service.
 
@@ -12,7 +12,7 @@ Set `SLF_API_KEY` in the terminal environment or the machine’s secret manager,
 
 ```bash
 claude mcp add --transport stdio --scope user slf-guardian -- \
-  uvx --from slf-guardian-mcp==1.2.1 slf-guardian-mcp
+  uvx --from slf-guardian-mcp==1.2.2 slf-guardian-mcp
 claude mcp get slf-guardian
 ```
 
@@ -28,7 +28,7 @@ Add this to `~/.cursor/mcp.json` for user-wide access, or `.cursor/mcp.json` for
     "slf-guardian": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"],
+      "args": ["--from", "slf-guardian-mcp==1.2.2", "slf-guardian-mcp"],
       "env": {"SLF_API_KEY": "${env:SLF_API_KEY}"}
     }
   }
@@ -44,7 +44,7 @@ Set `SLF_API_KEY` in the local environment. Add this server to `~/.codex/config.
 ```toml
 [mcp_servers.slf-guardian]
 command = "uvx"
-args = ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"]
+args = ["--from", "slf-guardian-mcp==1.2.2", "slf-guardian-mcp"]
 env_vars = ["SLF_API_KEY"]
 ```
 
@@ -68,7 +68,7 @@ Use the editor-managed MCP configuration (`mcp.json`) and a password input. Exam
     "slf-guardian": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "slf-guardian-mcp==1.2.1", "slf-guardian-mcp"],
+      "args": ["--from", "slf-guardian-mcp==1.2.2", "slf-guardian-mcp"],
       "env": {"SLF_API_KEY": "${input:slf-api-key}"}
     }
   }

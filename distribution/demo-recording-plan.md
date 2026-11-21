@@ -11,7 +11,7 @@ This is a **recording plan**, not a video and not proof of a live run. No API ca
 ## Capture setup
 
 - Use a clean Claude Code, Cursor, or Codex test profile with only the published package version and a locally stored `SLF_API_KEY`.
-- Confirm the exact package version shown in the client log; current published version is 1.2.1.
+- Confirm the exact package version shown in the client log; current published version is 1.2.2.
 - Use two synthetic requests: a known package check such as `requests` and a destructive command string such as `rm -rf /`. Do not execute the command; submit it only to the checker.
 - Before capture, verify the account’s credit state and rate limit. Each valid call consumes one credit; after the 1,000 free credits, the published API price is $0.01 per call.
 - Turn off terminal prompt echo and notifications. Never reveal the API key, account email, private source code, or user data.
