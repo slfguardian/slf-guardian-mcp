@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "slf-guardian-mcp"
-version = "1.2.2"
+version = "1.2.3"
 description = "Local stdio MCP client for hosted pre-action checks on packages, commands, code and untrusted content"
 readme = "README.md"
 requires-python = ">=3.9"

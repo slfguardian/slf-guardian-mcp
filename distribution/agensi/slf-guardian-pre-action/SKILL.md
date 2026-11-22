@@ -32,7 +32,7 @@ Each valid MCP call consumes one API credit. A key starts with 1,000 free calls;
 
 Send only the minimum information needed. Remove secrets and private data before checking code or content. Do not paste an API key, CDP credential, wallet secret, or payment authorization into an MCP tool argument or chat.
 
-The published PyPI release used by the examples is `slf-guardian-mcp==1.2.2`. This skill does not enable x402 auto-payment. Never claim that installing the skill starts an x402 wallet or that a call was paid. The optional buyer bridge exists only in the 1.2.2 release; it is not enabled by this skill or plugin configuration.
+The published PyPI release used by the examples is `slf-guardian-mcp==1.2.3`. This skill does not enable x402 auto-payment. Never claim that installing the skill starts an x402 wallet or that a call was paid. The optional buyer bridge exists only in the 1.2.3 release; it is not enabled by this skill or plugin configuration.
 
 ## Reference
 

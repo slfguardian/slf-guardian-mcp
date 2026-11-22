@@ -33,7 +33,7 @@ MAX_RESPONSE_BYTES = 2 * 1024 * 1024
 MAX_AUDIT_BYTES = 400 * 1024
 MAX_AUDIT_FILES = 40
 MAX_BATCH_ITEMS = 20
-VERSION = "1.2.2"
+VERSION = "1.2.3"
 PROTOCOL_VERSION = "2024-11-05"
 TOOL_ANNOTATIONS = {
     # Calls consume a metered credit even though they do not alter the target.
@@ -110,7 +110,10 @@ def _read_bounded_response(response, deadline):
         if remaining <= 0:
             raise TimeoutError("response deadline exceeded")
         if sock is not None:
-            sock.settimeout(remaining)
+            try:
+                sock.settimeout(remaining)
+            except OSError:
+                sock = None
         read = getattr(response, "read1", response.read)
         chunk = read(min(65536, MAX_RESPONSE_BYTES + 1 - total))
         if not chunk:

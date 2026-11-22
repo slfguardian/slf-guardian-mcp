@@ -30,4 +30,4 @@ Example: `{"domain":"https://example.com"}`. This is a passive outside-in site c
 
 Each valid call uses one credit. Keys start with 1,000 free calls; the API lists $0.01 per call after free credits, with a 20-call-per-minute per-key limit. For HTTP 429, respect `Retry-After`; do not retry in a loop. On timeout or an API error, report that the check did not complete. Never convert an error into a pass.
 
-The current public PyPI release is 1.2.2 as of 2026-11-20. Examples must pin a published release. The 1.2.2 package contains an optional buyer bridge, but these skill/plugin examples do not enable it. Do not promise seller-side MCP settlement.
+The 1.2.3 package contains an optional buyer bridge. Examples should pin the current public release. These skill/plugin examples do not enable the buyer bridge. Do not promise seller-side MCP settlement.
