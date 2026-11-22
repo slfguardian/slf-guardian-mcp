@@ -1,7 +1,7 @@
 # Calling the API directly
 
 ```bash
-# 1. Get a key (25 free calls)
+# 1. Get a key (1,000 free calls per API key)
 curl -X POST https://slfguardian.com/v1/keys \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com"}'
