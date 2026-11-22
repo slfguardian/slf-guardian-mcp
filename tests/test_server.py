@@ -6,12 +6,13 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib.metadata import version as installed_version
 from pathlib import Path
 from threading import Thread
+from types import SimpleNamespace
 
 from slf_guardian_mcp.server import TOOLS, VERSION
 
 
 def test_version_and_tool_inventory():
-    assert VERSION == "1.2.2"
+    assert VERSION == "1.2.3"
     assert [tool["name"] for tool in TOOLS] == [
         "audit_code",
         "check_package",
@@ -395,6 +396,72 @@ def test_api_response_body_is_bounded(monkeypatch):
     result = server.call_api("/v1/audit", {"code": "x"})
     assert result["ok"] is False
     assert result["error"] == "invalid_response"
+
+
+def test_bounded_response_ignores_closed_socket_timeout_error():
+    import slf_guardian_mcp.server as server
+
+    class FakeSocket:
+        def __init__(self):
+            self.calls = 0
+
+        def settimeout(self, _remaining):
+            self.calls += 1
+            if self.calls > 1:
+                raise OSError(9, "Bad file descriptor")
+
+    fake_socket = FakeSocket()
+
+    class FakeResponse:
+        def __init__(self):
+            self.fp = SimpleNamespace(raw=SimpleNamespace(_sock=fake_socket))
+            self.chunks = [b"body", b""]
+
+        def read1(self, _size):
+            return self.chunks.pop(0)
+
+        def read(self, size):
+            return self.read1(size)
+
+    response = FakeResponse()
+    assert server._read_bounded_response(response, time.monotonic() + 1) == b"body"
+    assert fake_socket.calls == 2
+
+
+def test_call_api_succeeds_when_server_closes_after_response_body(monkeypatch):
+    import slf_guardian_mcp.server as server
+
+    body = b'{"ok":true,"verdict":"pass","safe_to_deliver":true,"findings":[]}'
+
+    class ClosingHandler(BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
+
+        def do_POST(self):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(body)
+            self.wfile.flush()
+
+        def log_message(self, *_args):
+            pass
+
+    local = ThreadingHTTPServer(("127.0.0.1", 0), ClosingHandler)
+    thread = Thread(target=local.serve_forever, daemon=True)
+    thread.start()
+    monkeypatch.setattr(server, "API_KEY", "dummy-loopback-key")
+    monkeypatch.setattr(
+        server, "API_BASE", "http://127.0.0.1:%d" % local.server_port
+    )
+    monkeypatch.setattr(server, "TIMEOUT", "2")
+    try:
+        result = server.call_api("/v1/audit", {"code": "print(1)"})
+    finally:
+        local.shutdown()
+        local.server_close()
+    assert result["ok"] is True, result
 
 
 def test_api_total_response_deadline_is_enforced(monkeypatch):

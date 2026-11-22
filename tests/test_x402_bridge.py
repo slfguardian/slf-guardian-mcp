@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
+from types import SimpleNamespace
 
 import pytest
 
@@ -464,6 +465,25 @@ def test_paid_response_body_is_bounded(monkeypatch):
     assert result["error"] == "invalid_response"
     assert "2 MiB" in result["hint"]
     assert response.closed
+
+
+@pytest.mark.parametrize("fail_on_call", [1, 2])
+def test_paid_response_reader_ignores_closed_socket_timeout_error(fail_on_call):
+    class FakeSocket:
+        def __init__(self):
+            self.calls = 0
+
+        def settimeout(self, _timeout):
+            self.calls += 1
+            if self.calls == fail_on_call:
+                raise OSError(9, "Bad file descriptor")
+
+    fake_socket = FakeSocket()
+    response = FakePaidResponse(200, chunks=[b"body", b""])
+    response.raw = SimpleNamespace(_connection=SimpleNamespace(sock=fake_socket))
+
+    assert bridge._read_bounded_response(response, timeout=2) == b"body"
+    assert fake_socket.calls == fail_on_call
 
 
 def test_payment_recovery_cannot_request_a_second_signature(monkeypatch, tmp_path):

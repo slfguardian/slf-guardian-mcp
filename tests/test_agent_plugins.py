@@ -3,7 +3,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = ROOT / "distribution" / "plugins"
-PUBLISHED_VERSION = "1.2.2"
+PUBLISHED_VERSION = "1.2.3"
 
 
 def test_claude_plugin_uses_sensitive_user_config_and_released_mcp():

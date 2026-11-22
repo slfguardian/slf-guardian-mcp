@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLISHED_VERSION = "1.2.2"
+PUBLISHED_VERSION = "1.2.3"
 
 
 def test_cursor_and_vscode_configs_are_valid_and_secret_safe():
@@ -79,7 +79,7 @@ def test_skill_reference_exists_and_does_not_claim_enforcement_or_payment():
     reference_text = reference.read_text(encoding="utf-8")
     assert "does not install the MCP" in skill_text
     assert "enforce decisions in the operating system" in skill_text
-    assert "The 1.2.2 package contains an optional buyer bridge" in reference_text
+    assert "The 1.2.3 package contains an optional buyer bridge" in reference_text
     assert "Do not promise seller-side MCP settlement." in reference_text
 
 

@@ -487,7 +487,7 @@ def _get_payment_runtime(api_base: str, endpoint: str) -> Tuple[Any, str, Any]:
             session = requests.Session()
             session.trust_env = False
             session.verify = True
-            session.headers.update({"User-Agent": "slf-guardian-mcp/1.2.2"})
+            session.headers.update({"User-Agent": "slf-guardian-mcp/1.2.3"})
             session.mount("https://", x402HTTPAdapter(http_client))
             _payment_runtime[key] = (session, signer.address, attempt_state)
             return _payment_runtime[key]
@@ -519,13 +519,19 @@ def _read_bounded_response(response: Any, timeout: float) -> bytes:
         except AttributeError:
             continue
     if sock is not None:
-        sock.settimeout(timeout)
+        try:
+            sock.settimeout(timeout)
+        except OSError:
+            sock = None
     for chunk in response.iter_content(chunk_size=65536):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             raise TimeoutError("x402 response deadline exceeded")
         if sock is not None:
-            sock.settimeout(remaining)
+            try:
+                sock.settimeout(remaining)
+            except OSError:
+                sock = None
         if not chunk:
             continue
         total += len(chunk)

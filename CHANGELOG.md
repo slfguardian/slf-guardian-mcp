@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3
+
+- Fix: every API call failed with `network: [Errno 9] Bad file descriptor` when the API closed the connection after the response body.
+
 ## 1.2.2
 
 - Negotiate the supported MCP protocol version during initialization.
